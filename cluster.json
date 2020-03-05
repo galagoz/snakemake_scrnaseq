@@ -1,0 +1,58 @@
+{
+    "__default__" :
+    {
+      "n" : 1,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem": "10G",
+    },
+
+    "alignment" :
+    {
+      "n" : 16,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "240G",
+    },
+
+    "bamCleave" :
+    {
+      "n" : 16,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "240G",
+    },
+
+    "featureCounts" :
+    {
+      "n" : 16,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "20G",
+    },
+
+    "addOrReplaceReadGroups" :
+    {
+      "n" : 8,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "20G",
+    },
+
+    "markDuplicates" :
+    {
+      "n" : 8,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "20G",
+    },
+
+    "buildBamIndex" :
+    {
+      "n" : 8,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "20G",
+    }
+
+}
