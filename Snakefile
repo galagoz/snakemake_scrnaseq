@@ -9,8 +9,8 @@ rule all:
         #"/work/project/becstr_008/data/bams",
         #expand("{file}",file=[f.split("-")[0] for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam')])
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{file}/counts.txt",file=(f for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam'))),
-        #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}",file=(f for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam'))) #if doesn't work, try picard_1!!!!
-        expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{bam}.bam",bam=(f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam')))
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}",file=(f for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam'))), #if doesn't work, try picard_1!!!!
+        expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai",bam=(f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam')))
 
 #rule alignment:
 #    input:
@@ -28,7 +28,7 @@ rule all:
 
 #rule bamCleave:
 #    input:
-#        bam="/work/project/becstr_008/poirion_snakemake/test/outs/possorted_genome_bam.bam"
+#        bam="/work/project/becstr_008/snakemake_scrnaseq/test/outs/possorted_genome_bam.bam"
 #    output:
 #        out="/work/project/becstr_008/data/bams/"
 #    threads:
@@ -77,12 +77,13 @@ rule all:
 
 rule buildBamIndex:
     input:
-        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}.bam"
+        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{bam}.bam"
     output:
-        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{file}.bai"
+        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai"
     threads:
         8
     shell:
         """
-        java -jar /work/project/becstr_008/picard.jar BuildBamIndex I={input} O={output} TMP_DIR="/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/tmpDir"
+        java -jar /work/project/becstr_008/picard.jar BuildBamIndex I={input} O={output} TMP_DIR=/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/tmpDir
         """
+#mv /work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/bams_sel_TTTGTCACATGCCACG-1.bai /work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/
