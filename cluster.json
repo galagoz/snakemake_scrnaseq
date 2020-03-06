@@ -53,6 +53,14 @@
       "partition" : "slim18",
       "time" : "00:40:00",
       "mem" : "20G",
+    },
+
+    "sortSam" :
+    {
+      "n" : 8,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "20G",
     }
 
 }

@@ -3,14 +3,18 @@
 # id_SRR..._S1_L001_R1_001.fastq.gz ("id" should be the same for all fastqs
 # and must be used in count commmand below)
 
+FILES = (f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam'))
+BAMS = (f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam'))
+
 rule all:
     input:
         #"test1",
         #"/work/project/becstr_008/data/bams",
         #expand("{file}",file=[f.split("-")[0] for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam')])
-        #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{file}/counts.txt",file=(f for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam'))),
-        #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}",file=(f for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam'))), #if doesn't work, try picard_1!!!!
-        expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai",bam=(f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam')))
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{file}/counts.txt",file=FILES),
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}",file=FILES), #if doesn't work, try picard_1!!!!
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai",bam=BAMS),
+        expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",file=FILES)
 
 #rule alignment:
 #    input:
@@ -75,15 +79,26 @@ rule all:
 #        java -jar /work/project/becstr_008/picard.jar MarkDuplicates I={input} O={output} CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT M={output}.marked_dup_metrics.txt
 #        """
 
-rule buildBamIndex:
+#rule buildBamIndex:
+#    input:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{bam}.bam"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai"
+#    threads:
+#        8
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/picard.jar BuildBamIndex I={input} O={output} TMP_DIR=/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/tmpDir
+#        """
+
+rule sortSam:
     input:
-        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{bam}.bam"
+        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}"
     output:
-        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai"
+        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}"
     threads:
         8
     shell:
         """
-        java -jar /work/project/becstr_008/picard.jar BuildBamIndex I={input} O={output} TMP_DIR=/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/tmpDir
+        java -jar /work/project/becstr_008/picard.jar SortSam I={input} O={output} SORT_ORDER=coordinate TMP_DIR=/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/tmpDir CREATE_INDEX=TRUE
         """
-#mv /work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/bams_sel_TTTGTCACATGCCACG-1.bai /work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/
