@@ -57,6 +57,10 @@ rule all:
 #        /work/project/becstr_008/subread-1.4.6-p5-Linux-x86_64/bin/featureCounts -p -B -C -M --primary -T 16 -t exon -g gene_id -a {input.gtfDir} -o {output} {input.inDir}
 #        """
 
+#####################
+#       PICARD
+#####################
+
 #rule addOrReplaceReadGroups:
 #    input:
 #        "/work/project/becstr_008/data/bams/{file}"
@@ -117,16 +121,33 @@ rule all:
 #        java -jar /work/project/becstr_008/picard.jar CreateSequenceDictionary R={input} O={output}
 #        """
 
-rule reorderSam:
+#rule reorderSam:
+#    input:
+#        file="/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",
+#        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+#        dict="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}"
+#    threads:
+#        8
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/picard.jar ReorderSam I={input.file} O={output} REFERENCE_SEQUENCE={input.ref} SEQUENCE_DICTIONARY={input.dict} CREATE_INDEX=TRUE
+#        """
+
+#####################
+#       GATK
+#####################
+
+rule splitNCigarReads: ## check if this rule works, add it to the cluster.json
     input:
-        file="/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",
-        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-        dict="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict"
+        file="/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}",
+        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
         "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}"
     threads:
         8
     shell:
         """
-        java -jar /work/project/becstr_008/picard.jar ReorderSam I={input.file} O={output} REFERENCE_SEQUENCE={input.ref} SEQUENCE_DICTIONARY={input.dict} CREATE_INDEX=TRUE
+        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T SplitNCigarReads -I {input.file} -o {output} -R {input.ref} -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
         """
