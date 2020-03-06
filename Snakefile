@@ -14,7 +14,9 @@ rule all:
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{file}/counts.txt",file=FILES),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}",file=FILES), #if doesn't work, try picard_1!!!!
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai",bam=BAMS),
-        expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",file=FILES)
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",file=FILES),
+        #"/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict",
+        expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/") if f.endswith('-1.bam')))
 
 #rule alignment:
 #    input:
@@ -91,14 +93,40 @@ rule all:
 #        java -jar /work/project/becstr_008/picard.jar BuildBamIndex I={input} O={output} TMP_DIR=/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/tmpDir
 #        """
 
-rule sortSam:
+#rule sortSam:
+#    input:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}"
+#    threads:
+#        8
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/picard.jar SortSam I={input} O={output} SORT_ORDER=coordinate TMP_DIR=/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/tmpDir CREATE_INDEX=TRUE
+#        """
+
+#rule createSequenceDictionary:
+#    input:
+#        "/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+#    output:
+#        "/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict"
+#    threads:
+#        16
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/picard.jar CreateSequenceDictionary R={input} O={output}
+#        """
+
+rule reorderSam:
     input:
-        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/{file}"
+        file="/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",
+        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+        dict="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict"
     output:
-        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}"
+        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}"
     threads:
         8
     shell:
         """
-        java -jar /work/project/becstr_008/picard.jar SortSam I={input} O={output} SORT_ORDER=coordinate TMP_DIR=/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/tmpDir CREATE_INDEX=TRUE
+        java -jar /work/project/becstr_008/picard.jar ReorderSam I={input.file} O={output} REFERENCE_SEQUENCE={input.ref} SEQUENCE_DICTIONARY={input.dict} CREATE_INDEX=TRUE
         """
