@@ -16,7 +16,7 @@ rule all:
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_3/{bam}.bai",bam=BAMS),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",file=FILES),
         #"/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict",
-        expand("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/") if f.endswith('-1.bam')))
+        expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/") if f.endswith('-1.bam')))
 
 #rule alignment:
 #    input:
@@ -125,7 +125,7 @@ rule all:
 #    input:
 #        file="/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_4/{file}",
 #        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-#        dict="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict"
+#        dict="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.dict"
 #    output:
 #        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}"
 #    threads:
@@ -139,14 +139,14 @@ rule all:
 #       GATK
 #####################
 
-rule splitNCigarReads: ## check if this rule works, add it to the cluster.json
+rule splitNCigarReads:
     input:
         file="/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}",
         ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
-        "/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/{file}"
+        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}"
     threads:
-        8
+        16
     shell:
         """
         java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T SplitNCigarReads -I {input.file} -o {output} -R {input.ref} -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
