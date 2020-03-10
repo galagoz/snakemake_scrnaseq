@@ -85,5 +85,13 @@
       "partition" : "slim18",
       "time" : "00:40:00",
       "mem" : "20G",
+    },
+
+    "realignerTargetCreator" :
+    {
+      "n" : 16,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "50G",
     }
 }
