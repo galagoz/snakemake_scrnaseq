@@ -18,7 +18,8 @@ rule all:
         #"/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dict",
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/") if f.endswith('-1.bam'))),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}.ALLforIndelRealigner.intervals",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/") if f.endswith('-1.bam'))),
-        expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/") if f.endswith('-1.bam')))
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/") if f.endswith('-1.bam'))),
+        expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}.recal_data.csv",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/") if f.endswith('-1.bam')))
 
 #rule alignment:
 #    input:
@@ -168,16 +169,30 @@ rule all:
 #        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T RealignerTargetCreator -I {input.file} --known {input.vcf} -o {output} -R {input.ref} -nt 16
 #        """
 
-rule indelRealigner:
+#rule indelRealigner:
+#    input:
+#        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}",
+#        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+#        vcf="/work/project/becstr_008/data/indel_calls/00-All.sorted.vcf"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}"
+#    threads:
+#        16
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T IndelRealigner -I {input.file} -o {output} -targetIntervals {input.file}.ALLforIndelRealigner.intervals -R {input.ref}
+#        """
+
+rule baseRecalibrator:
     input:
-        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}",
+        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}",
         ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
         vcf="/work/project/becstr_008/data/indel_calls/00-All.sorted.vcf"
     output:
-        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}"
+        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}.recal_data.csv"
     threads:
         16
     shell:
         """
-        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T IndelRealigner -I {input.file} -o {output} -targetIntervals {input.file}.ALLforIndelRealigner.intervals -R {input.ref}
+        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T BaseRecalibrator -I {input.file} -o {output} -R {input.ref} -nct 20 -knownSites {input.vcf}
         """
