@@ -109,5 +109,29 @@
       "partition" : "slim18",
       "time" : "00:40:00",
       "mem" : "240G",
+    },
+
+    "baseRecalibrator" :
+    {
+      "n" : 16,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "24G",
+    },
+
+    "haplotypeCaller" :
+    {
+      "n" : 16,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "24G",
+    },
+
+    "variantFiltration" :
+    {
+      "n" : 16,
+      "partition" : "slim18",
+      "time" : "00:40:00",
+      "mem" : "200G",
     }
 }

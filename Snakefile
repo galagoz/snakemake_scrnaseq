@@ -19,7 +19,10 @@ rule all:
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_6/") if f.endswith('-1.bam'))),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/{file}.ALLforIndelRealigner.intervals",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/") if f.endswith('-1.bam'))),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_1/") if f.endswith('-1.bam'))),
-        expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}.recal_data.csv",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/") if f.endswith('-1.bam')))
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}.recal_data.csv",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/") if f.endswith('-1.bam'))),
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_5/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/") if f.endswith('-1.bam'))),
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/{file}.snp.vcf",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_5/") if f.endswith('-1.bam'))),
+        expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/") if f.endswith('.vcf')))
 
 #rule alignment:
 #    input:
@@ -183,16 +186,56 @@ rule all:
 #        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T IndelRealigner -I {input.file} -o {output} -targetIntervals {input.file}.ALLforIndelRealigner.intervals -R {input.ref}
 #        """
 
-rule baseRecalibrator:
+#rule baseRecalibrator:
+#    input:
+#        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}",
+#        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+#        vcf="/work/project/becstr_008/data/indel_calls/00-All.sorted.vcf"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}.recal_data.csv"
+#    threads:
+#        16
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T BaseRecalibrator -I {input.file} -o {output} -R {input.ref} -nct 20 -knownSites {input.vcf}
+#        """
+
+#rule printReads:
+#    input:
+#        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}",
+#        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_5/{file}"
+#    threads:
+#        16
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T PrintReads -I {input.file} --out {output} -R {input.ref} -BQSR {input.file}.recal_data.csv -nct 20
+#        """
+
+#rule haplotypeCaller:
+#    input:
+#        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_5/{file}",
+#        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+#        vcf="/work/project/becstr_008/data/indel_calls/00-All.sorted.vcf"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/{file}.snp.vcf"
+#    threads:
+#        16
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T HaplotypeCaller -I {input.file} -o {output} -R {input.ref} --dbsnp {input.vcf} -dontUseSoftClippedBases
+#        """
+
+rule variantFiltration:
     input:
-        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}",
-        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-        vcf="/work/project/becstr_008/data/indel_calls/00-All.sorted.vcf"
+        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/{file}",
+        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
-        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}.recal_data.csv"
+        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf"
     threads:
         16
     shell:
         """
-        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T BaseRecalibrator -I {input.file} -o {output} -R {input.ref} -nct 20 -knownSites {input.vcf}
+        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T VariantFiltration -V {input.file} -o {output} -R {input.ref} -cluster 3 --filterExpression "FS > 30.0" --filterName "FS" --filterExpression "QD < 2.0" --filterName "QD"
         """
