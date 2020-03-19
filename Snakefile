@@ -6,8 +6,8 @@
 FILES = (f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam'))
 BAMS = (f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam'))
 
-rule all:
-    input:
+#rule all:
+    #input:
         #"test1",
         #"/work/project/becstr_008/data/bams",
         #expand("{file}",file=[f.split("-")[0] for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam')])
@@ -22,7 +22,12 @@ rule all:
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/{file}.recal_data.csv",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/") if f.endswith('-1.bam'))),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_5/{file}",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_3/") if f.endswith('-1.bam'))),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/{file}.snp.vcf",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_5/") if f.endswith('-1.bam'))),
-        expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/") if f.endswith('.vcf')))
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/") if f.endswith('.vcf'))),
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{file}/results.table",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/") if f.endswith('.vcf'))),
+        #"/work/project/becstr_008/results/poirion_snakemake/counts/keys.txt",
+        #"/work/project/becstr_008/results/poirion_snakemake/counts/values.txt"
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{file}/count_table.txt",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/counts/") if f.endswith('.bam')))
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcfs}.snp.vcf/results.table",vcfs=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/") if f.endswith('.vcf')))
 
 #rule alignment:
 #    input:
@@ -227,15 +232,63 @@ rule all:
 #        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T HaplotypeCaller -I {input.file} -o {output} -R {input.ref} --dbsnp {input.vcf} -dontUseSoftClippedBases
 #        """
 
-rule variantFiltration:
+#rule variantFiltration:
+#    input:
+#        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/{file}",
+#        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf"
+#    threads:
+#        16
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T VariantFiltration -V {input.file} -o {output} -R {input.ref} -cluster 3 --filterExpression "FS > 30.0" --filterName "FS" --filterExpression "QD < 2.0" --filterName "QD"
+#        """
+
+#rule variantToTable:
+#    input:
+#        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf",
+#        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{file}/results.table"
+#    threads:
+#        16
+#    shell:
+#        """
+#        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T VariantsToTable -V {input.file} -R {input.ref} -F CHROM -F POS -F ID -F QUAL -F AC -o {output}
+#        """
+
+#rule keysAndValues:
+#    input:
+#        counts="/work/project/becstr_008/results/poirion_snakemake/results/counts/bams_sel_TTTGTCACATGCCACG-1.bam/counts.txt"
+#    output:
+#        keys="/work/project/becstr_008/results/poirion_snakemake/results/counts/keys.txt",
+#        values="/work/project/becstr_008/results/poirion_snakemake/results/counts/values.txt"
+#    shell: # Save gene IDs as "keys.txt" & other values as "values.txt"
+#        """
+#        awk 'NR>=3 {{print $1}}' {input.counts} > {output.keys}
+#        awk 'NR>=3 {{$1=""; print $0}}' {input.counts} > {output.values}
+#        """
+
+rule countTable:
     input:
-        file="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/{file}",
-        ref="/work/project/becstr_008/data/reference_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+        file="/work/project/becstr_008/results/poirion_snakemake/results/counts/bams_sel_TGAGCCGTCGCAAACT-1.bam"
     output:
-        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf"
-    threads:
-        16
-    shell:
+        count_table="/work/project/becstr_008/results/poirion_snakemake/results/counts/bams_sel_TGAGCCGTCGCAAACT-1.bam/count_table.txt"
+    shell: # Generate count table from counts.txt files & generate variant table from results.table files + merge all snv_filtered.vcf files
+           # init the txt file with geneID, geneLength and geneCounts = count_table.txt
+           # append the geneCount column of each counts.txt to the end of the count_table2.txt
+           # list and save all cell "vcfToTable" paths in gatk_8
+           # list and save all SNV_dictionary.txt paths in gatk_8
         """
-        java -jar /work/project/becstr_008/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar -T VariantFiltration -V {input.file} -o {output} -R {input.ref} -cluster 3 --filterExpression "FS > 30.0" --filterName "FS" --filterExpression "QD < 2.0" --filterName "QD"
+        shuf -n1 -e * = /work/project/becstr_008/results/poirion_snakemake/results/counts/$randomFolder
+        awk 'NR>=2 {{print $1, $6}}' /work/project/becstr_008/results/poirion_snakemake/results/counts/$randomFolder/counts.txt > /work/project/becstr_008/results/poirion_snakemake/results/counts/$randomFolder/count_table.txt
+        awk 'NR==FNR{{a[NR]=$7;next}}{{a[FNR]=a[FNR+1];a[1]="cellID"}}{{print $0,a[FNR]}}' {input.file}/test_counts.txt {input.file}/count_table.txt > {input.file}/tmp_counts.txt; mv {input.file}/tmp_counts.txt {output.count_table}
+
+        ls -d /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/*/ > /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/vcfList.txt
+        ls -d /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/*/SNV_dictionary.txt > /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/dictList.txt
         """
+
+#vcfs="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcfs}.snp.vcf"
+#awk '{{print $0, "chr" $1 "_" $2}}' {input.vcfs}/results.table > {input.vcfs}/tmp_res.table; mv {input.vcfs}/tmp_res.table {output.res_table}
+#res_table="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcfs}.snp.vcf/results.table"
