@@ -2,12 +2,16 @@
 # before running, format your fastq file names as the following:
 # id_SRR..._S1_L001_R1_001.fastq.gz ("id" should be the same for all fastqs
 # and must be used in count commmand below)
+import os, random
 
 FILES = (f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam'))
 BAMS = (f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/picard/picard_2/") if f.endswith('-1.bam'))
+ALL_VCF = (f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/") if f.endswith('.vcf'))
+RAND = random.choice(os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/counts/"))
+ALL_COUNT = (f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/counts/") if f.endswith('.bam'))
 
 #rule all:
-    #input:
+#    input:
         #"test1",
         #"/work/project/becstr_008/data/bams",
         #expand("{file}",file=[f.split("-")[0] for f in os.listdir("/work/project/becstr_008/data/bams") if f.endswith('-1.bam')])
@@ -25,9 +29,12 @@ BAMS = (f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/po
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/{file}/snv_filtered.vcf",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_6/") if f.endswith('.vcf'))),
         #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{file}/results.table",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_7/") if f.endswith('.vcf'))),
         #"/work/project/becstr_008/results/poirion_snakemake/counts/keys.txt",
-        #"/work/project/becstr_008/results/poirion_snakemake/counts/values.txt"
-        #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{file}/count_table.txt",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/counts/") if f.endswith('.bam')))
-        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcfs}.snp.vcf/results.table",vcfs=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/") if f.endswith('.vcf')))
+        #"/work/project/becstr_008/results/poirion_snakemake/counts/values.txt",
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{file}/count_table.txt",file=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/counts/") if f.endswith('.bam'))),
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcfs}.snp.vcf/results.table",vcfs=(f for f in os.listdir("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/") if f.endswith('.vcf'))),
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{rand}/../count_table.txt",rand=RAND),
+#        expand("/work/project/becstr_008/results/poirion_snakemake/results/counts/{counts}/../tmp_counts.txt",counts=ALL_COUNT),
+        #expand("/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcf}",vcf=ALL_VCF)
 
 #rule alignment:
 #    input:
@@ -270,24 +277,39 @@ BAMS = (f.split(".")[0] for f in os.listdir("/work/project/becstr_008/results/po
 #        awk 'NR>=3 {{$1=""; print $0}}' {input.counts} > {output.values}
 #        """
 
+#rule initCountTable:
+#    input:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/counts/{rand}/counts.txt"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/counts/{rand}/../count_table.txt"
+#    shell: # Generate count table from counts.txt files & generate variant table from results.table files + merge all snv_filtered.vcf files
+#           # init the txt file with geneID, geneLength and geneCounts = count_table.txt
+#        """
+#        awk 'NR>=2 {{print $1, $6}}' {input} > {output}
+#        """
+
 rule countTable:
     input:
-        file="/work/project/becstr_008/results/poirion_snakemake/results/counts/bams_sel_TGAGCCGTCGCAAACT-1.bam"
+        "/work/project/becstr_008/results/poirion_snakemake/results/counts/bams_sel_AGCGTATCATACAGCT-1.bam"
     output:
-        count_table="/work/project/becstr_008/results/poirion_snakemake/results/counts/bams_sel_TGAGCCGTCGCAAACT-1.bam/count_table.txt"
-    shell: # Generate count table from counts.txt files & generate variant table from results.table files + merge all snv_filtered.vcf files
-           # init the txt file with geneID, geneLength and geneCounts = count_table.txt
-           # append the geneCount column of each counts.txt to the end of the count_table2.txt
-           # list and save all cell "vcfToTable" paths in gatk_8
-           # list and save all SNV_dictionary.txt paths in gatk_8
+        "/work/project/becstr_008/results/poirion_snakemake/results/counts/bams_sel_AGCGTATCATACAGCT-1.bam/../tmp_counts.txt"
+    shell: # append the geneCount column of each counts.txt to the end of the count_table2.txt
         """
-        shuf -n1 -e * = /work/project/becstr_008/results/poirion_snakemake/results/counts/$randomFolder
-        awk 'NR>=2 {{print $1, $6}}' /work/project/becstr_008/results/poirion_snakemake/results/counts/$randomFolder/counts.txt > /work/project/becstr_008/results/poirion_snakemake/results/counts/$randomFolder/count_table.txt
-        awk 'NR==FNR{{a[NR]=$7;next}}{{a[FNR]=a[FNR+1];a[1]="cellID"}}{{print $0,a[FNR]}}' {input.file}/test_counts.txt {input.file}/count_table.txt > {input.file}/tmp_counts.txt; mv {input.file}/tmp_counts.txt {output.count_table}
+        awk 'NR==FNR{{a[NR]=$7;next}}{{a[FNR]=a[FNR+1];a[1]="cellID"}}{{print $0,a[FNR]}}' {input}/counts.txt {input}/../count_table.txt > {output}; mv {output} {input}/../count_table.txt
+        """
 
-        ls -d /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/*/ > /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/vcfList.txt
-        ls -d /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/*/SNV_dictionary.txt > /work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/dictList.txt
-        """
+#rule allVCFToTable:
+#    input:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcf}"
+#    output:
+#        "/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcf}"
+#    shell: # list and save all cell "vcfToTable" paths in gatk_8
+#           # list and save all SNV_dictionary.txt paths in gatk_8
+#        """
+#        ls -d {input}/ > {output}/../vcfList.txt
+#        ls -d {input}/SNV_dictionary.txt > {output}/../dictList.txt
+#        awk '{{print $0, "chr" $1 "_" $2}}' {input}/results.table > tmp_res.table; mv tmp_res.table results.table
+#        """
 
 #vcfs="/work/project/becstr_008/results/poirion_snakemake/results/gatk/gatk_8/{vcfs}.snp.vcf"
 #awk '{{print $0, "chr" $1 "_" $2}}' {input.vcfs}/results.table > {input.vcfs}/tmp_res.table; mv {input.vcfs}/tmp_res.table {output.res_table}
